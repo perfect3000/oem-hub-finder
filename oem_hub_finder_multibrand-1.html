@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>OEM Hub Finder — by PERFECT</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#E8001D;--black:#0A0A0A;--panel:#18191C;--border:#2a2b2f;
+  --text:#E8E6E1;--muted:#6B6B72;--green:#22C55E;--blue:#60A5FA;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--display:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(232,0,29,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,0,29,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* HEADER */
+header{position:relative;z-index:10;padding:16px 18px 0;border-bottom:1px solid var(--border)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.header-left{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;transition:background .3s}
+.brand-title{font-family:var(--display);font-size:22px;letter-spacing:2px;line-height:1}
+.brand-title .bname{color:var(--brand);transition:color .3s}
+.header-actions{display:flex;align-items:center;gap:7px}
+.tagline{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:3px;margin-bottom:10px}
+
+/* LANG TOGGLE */
+.lang-toggle{display:flex;background:var(--panel);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.lang-btn{background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:9px;padding:6px 10px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.lang-btn.active{background:var(--brand);color:#fff}
+
+/* SHARE BUTTON */
+.share-btn{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;padding:6px 11px;border-radius:20px;cursor:pointer;letter-spacing:1px;transition:all .2s;display:flex;align-items:center;gap:5px}
+.share-btn:active{border-color:var(--green);color:var(--green)}
+
+/* SHARE MODAL */
+.share-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:none;align-items:flex-end}
+.share-overlay.open{display:flex}
+.share-modal{background:#141619;border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;padding:20px 18px 34px;animation:slideUp .3s cubic-bezier(.23,1,.32,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.share-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.share-title{font-family:var(--display);font-size:24px;letter-spacing:3px;margin-bottom:6px}
+.share-sub{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:18px;line-height:1.6}
+.share-options{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.share-opt{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.share-opt:active{border-color:var(--brand)}
+.share-opt-icon{font-size:22px;flex-shrink:0}
+.share-opt-label{font-family:var(--mono);font-size:11px;color:var(--text);letter-spacing:1px}
+.share-opt-desc{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+.share-close{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:12px;border-radius:10px;cursor:pointer;letter-spacing:2px}
+
+/* BRAND SELECTOR */
+.brand-row{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:12px}
+.brand-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:20px;cursor:pointer;letter-spacing:1px;transition:all .2s;display:flex;align-items:center;gap:5px}
+.brand-btn.active{background:rgba(232,0,29,0.1);border-color:var(--brand);color:var(--brand)}
+
+/* MODE TABS */
+.mode-tabs{display:flex;border-bottom:1px solid var(--border)}
+.tab-btn{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;padding:13px 4px;cursor:pointer;letter-spacing:1px;border-bottom:2px solid transparent;text-transform:uppercase;transition:all .2s}
+.tab-btn.active{color:var(--brand);border-bottom-color:var(--brand)}
+
+/* PANELS */
+.view{display:none}.view.active{display:block}
+.search-panel{position:relative;z-index:10;padding:16px 18px}
+.field-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--brand);text-transform:uppercase;margin-bottom:6px;display:block}
+.input-row{display:grid;grid-template-columns:1fr 82px;gap:10px;margin-bottom:10px}
+input{background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:14px;padding:12px 14px;border-radius:6px;width:100%;outline:none;-webkit-appearance:none;transition:border-color .2s}
+input:focus{border-color:var(--brand)}
+input::placeholder{color:var(--muted)}
+.pos-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.pos-btn{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:10px 4px;border-radius:6px;cursor:pointer;text-align:center;transition:all .2s;letter-spacing:1px;text-transform:uppercase}
+.pos-btn.active{border-color:var(--brand);color:var(--brand);background:rgba(232,0,29,0.1)}
+.web-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:20px;padding:4px 10px;font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:1px;margin-bottom:14px}
+.examples-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.ex-pill{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;padding:5px 10px;border-radius:20px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.ex-pill:active{border-color:var(--brand);color:var(--brand)}
+.search-btn{width:100%;background:var(--brand);border:none;color:#fff;font-family:var(--display);font-size:22px;letter-spacing:3px;padding:14px;border-radius:6px;cursor:pointer;transition:transform .1s}
+.search-btn:active{transform:scale(0.98)}
+.search-btn:disabled{opacity:.6;cursor:not-allowed}
+.inv-btn{background:var(--blue)}
+.inv-info{background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:10px;color:var(--blue);letter-spacing:1px;line-height:1.7}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;padding:0 18px 14px;position:relative;z-index:10}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px}
+
+/* RESULTS */
+.results{position:relative;z-index:10;padding:0 18px 30px}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.result-title{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.result-count{font-family:var(--mono);font-size:10px;color:var(--brand);letter-spacing:1px}
+.result-count.blue{color:var(--blue)}
+
+/* CARDS */
+.part-card,.vehicle-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;animation:slideIn .3s ease both}
+.part-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);border-radius:3px 0 0 3px}
+.vehicle-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);border-radius:3px 0 0 3px}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.part-number{font-family:var(--display);font-size:26px;letter-spacing:3px;margin-bottom:6px}
+.vehicle-name{font-family:var(--display);font-size:22px;letter-spacing:2px;margin-bottom:4px}
+.vehicle-pn{font-family:var(--mono);font-size:12px;color:var(--blue);margin-bottom:8px;letter-spacing:1px}
+.part-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:3px;text-transform:uppercase}
+.badge-brand{background:rgba(232,0,29,0.12);color:var(--brand);border:1px solid rgba(232,0,29,0.3)}
+.badge-gen{background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)}
+.badge-blue{background:rgba(96,165,250,0.1);color:var(--blue);border:1px solid rgba(96,165,250,0.3)}
+.part-desc{font-family:var(--sans);font-size:12px;color:var(--muted);line-height:1.5}
+.copy-btn{position:absolute;top:12px;right:12px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:4px;cursor:pointer;transition:all .2s;letter-spacing:1px}
+.copy-btn.copied{border-color:var(--green);color:var(--green)}
+
+/* THINKING */
+.thinking{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center}
+.thinking-dots{display:inline-flex;gap:6px;margin-bottom:8px}
+.thinking-dots span{width:8px;height:8px;border-radius:50%;background:var(--brand);animation:bounce 1.2s ease infinite}
+.thinking-dots span:nth-child(2){animation-delay:.2s}
+.thinking-dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.thinking p{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
+.thinking small{font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:1px;margin-top:4px;display:block}
+
+/* ERROR / EMPTY */
+.error-box{background:rgba(232,0,29,0.08);border:1px solid rgba(232,0,29,0.3);border-radius:8px;padding:14px;font-family:var(--mono);font-size:12px;color:#E8001D;line-height:1.6}
+.empty{text-align:center;padding:40px 20px;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:1px}
+.empty .big{font-size:38px;margin-bottom:10px}
+.src-note{margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--green);padding:8px 13px;background:rgba(34,197,94,0.05);border-radius:6px;border:1px solid rgba(34,197,94,0.2);line-height:1.6}
+
+/* HISTORY */
+.history{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 12px;position:relative;z-index:10}
+.hist-pill{background:var(--panel);border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;padding:5px 10px;border-radius:20px;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
+.hist-pill:active{border-color:var(--brand);color:var(--brand)}
+
+/* FOOTER */
+.footer{position:relative;z-index:10;text-align:center;padding:20px 16px 34px;border-top:1px solid var(--border);margin-top:10px}
+.footer-title{font-family:var(--display);font-size:20px;letter-spacing:4px;color:var(--text);margin-bottom:4px}
+.footer-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- SHARE MODAL -->
+<div class="share-overlay" id="shareOverlay" onclick="if(event.target===this)closeShare()">
+  <div class="share-modal">
+    <div class="share-handle"></div>
+    <div class="share-title" id="shareTitleModal">SHARE</div>
+    <div class="share-sub" id="shareSubModal">Share this tool with your colleagues</div>
+    <div class="share-options">
+      <div class="share-opt" onclick="shareWhatsApp()">
+        <div class="share-opt-icon">💬</div>
+        <div>
+          <div class="share-opt-label" id="shareWaLabel">Share via WhatsApp</div>
+          <div class="share-opt-desc" id="shareWaDesc">Send the link directly</div>
+        </div>
+      </div>
+      <div class="share-opt" onclick="copyLink()">
+        <div class="share-opt-icon">🔗</div>
+        <div>
+          <div class="share-opt-label" id="shareLinkLabel">Copy link</div>
+          <div class="share-opt-desc" id="shareLinkDesc">Copy to clipboard</div>
+        </div>
+      </div>
+      <div class="share-opt" onclick="shareNative()">
+        <div class="share-opt-icon">📤</div>
+        <div>
+          <div class="share-opt-label" id="shareNativeLabel">More options</div>
+          <div class="share-opt-desc" id="shareNativeDesc">Telegram, Email, SMS…</div>
+        </div>
+      </div>
+    </div>
+    <button class="share-close" id="shareCancelBtn" onclick="closeShare()">CANCEL</button>
+  </div>
+</div>
+
+<header>
+  <div class="header-top">
+    <div class="header-left">
+      <div class="logo-icon" id="logoIcon">🔩</div>
+      <div class="brand-title"><span class="bname" id="brandName">TOYOTA</span> OEM FINDER</div>
+    </div>
+    <div class="header-actions">
+      <!-- LANG TOGGLE -->
+      <div class="lang-toggle">
+        <button class="lang-btn" id="btnFR" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+      </div>
+      <!-- SHARE -->
+      <button class="share-btn" onclick="openShare()">
+        <span>📤</span><span id="shareBtnTxt">Share</span>
+      </button>
+    </div>
+  </div>
+  <div class="tagline" id="tagline">Hub Bearings · Real-Time Web Verification · 4 Brands</div>
+
+  <!-- BRAND SELECTOR -->
+  <div class="brand-row">
+    <button class="brand-btn active" data-brand="Toyota"     onclick="switchBrand(this)">🇯🇵 Toyota</button>
+    <button class="brand-btn"        data-brand="Nissan"     onclick="switchBrand(this)">🇯🇵 Nissan</button>
+    <button class="brand-btn"        data-brand="Mitsubishi" onclick="switchBrand(this)">🇯🇵 Mitsubishi</button>
+    <button class="brand-btn"        data-brand="Hyundai"    onclick="switchBrand(this)">🇰🇷 Hyundai</button>
+  </div>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <button class="tab-btn active" id="tabNormal"  onclick="switchTab('normal')">🔍 <span data-t="tabVehicle">VEHICLE → REF</span></button>
+    <button class="tab-btn"        id="tabInverse" onclick="switchTab('inverse')">🔄 <span data-t="tabReverse">REF → VEHICLE</span></button>
+  </div>
+</header>
+
+<!-- VUE NORMALE -->
+<div class="view active" id="viewNormal">
+  <div class="search-panel">
+    <div class="web-badge">🌐 <span data-t="webBadge">REAL-TIME WEB VERIFICATION</span></div>
+    <label class="field-label" id="lblVehicle">Toyota Model</label>
+    <div class="input-row">
+      <input id="carInput"  type="text"   placeholder="ex: RAV4, Corolla…" autocomplete="off"/>
+      <input id="yearInput" type="number" placeholder="2008" min="1980" max="2025"/>
+    </div>
+    <label class="field-label" data-t="posLabel">Position</label>
+    <div class="pos-row">
+      <button class="pos-btn active" data-pos="all"   onclick="setPos(this)"><span data-t="posAll">🔄 All</span></button>
+      <button class="pos-btn"        data-pos="front" onclick="setPos(this)"><span data-t="posFront">⬆ Front</span></button>
+      <button class="pos-btn"        data-pos="rear"  onclick="setPos(this)"><span data-t="posRear">⬇ Rear</span></button>
+    </div>
+    <label class="field-label" data-t="exLabel" style="margin-bottom:8px">Quick examples</label>
+    <div class="examples-row" id="exNormal"></div>
+    <button class="search-btn" id="searchBtn" onclick="doSearch()" data-t="searchBtn">SEARCH</button>
+  </div>
+  <div id="normalHistSection" style="display:none">
+    <div class="divider"><span data-t="recentLabel">RECENT</span></div>
+    <div class="history" id="normalHist"></div>
+  </div>
+  <div class="divider"><span data-t="resultsLabel">RESULTS</span></div>
+  <div class="results" id="results">
+    <div class="empty"><div class="big">🔩</div><span data-t="emptyNormal">Enter a model and a year</span></div>
+  </div>
+</div>
+
+<!-- VUE INVERSE -->
+<div class="view" id="viewInverse">
+  <div class="search-panel">
+    <div class="web-badge">🌐 <span data-t="webBadge">REAL-TIME WEB VERIFICATION</span></div>
+    <div class="inv-info" id="invInfo">
+      🔄 <span data-t="invInfoTxt">Enter a full or partial part number<br>Ex: <strong>43550-42020</strong> or just <strong>42020</strong></span>
+    </div>
+    <label class="field-label" id="lblPN">OEM Part Number Toyota</label>
+    <input id="pnInput" type="text" placeholder="ex: 43550-42020 or 42020"
+           style="margin-bottom:12px;font-size:16px;letter-spacing:3px"
+           autocomplete="off" autocorrect="off" spellcheck="false"
+           oninput="this.value=this.value.toUpperCase()"/>
+    <label class="field-label" data-t="exLabel" style="margin-bottom:8px">Quick examples</label>
+    <div class="examples-row" id="exInverse"></div>
+    <button class="search-btn inv-btn" id="invSearchBtn" onclick="doInverse()" data-t="identifyBtn">IDENTIFY</button>
+  </div>
+  <div id="invHistSection" style="display:none">
+    <div class="divider"><span data-t="recentLabel">RECENT</span></div>
+    <div class="history" id="invHist"></div>
+  </div>
+  <div class="divider"><span data-t="compatLabel">COMPATIBLE VEHICLES</span></div>
+  <div class="results" id="resultsInv">
+    <div class="empty"><div class="big">🔄</div><span data-t="emptyInverse">Enter a part number</span></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-title">CREATED BY <span style="color:var(--brand)">PERFECT</span></div>
+  <div class="footer-sub">OEM Hub Bearing Finder · All Rights Reserved</div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  TRADUCTIONS
+// ════════════════════════════════════
+const LANG = {
+  en: {
+    tagline:       "Hub Bearings · Real-Time Web Verification · 4 Brands",
+    tabVehicle:    "VEHICLE → REF",
+    tabReverse:    "REF → VEHICLE",
+    webBadge:      "REAL-TIME WEB VERIFICATION",
+    posLabel:      "Position",
+    posAll:        "🔄 All",
+    posFront:      "⬆ Front",
+    posRear:       "⬇ Rear",
+    exLabel:       "Quick examples",
+    searchBtn:     "SEARCH",
+    identifyBtn:   "IDENTIFY",
+    recentLabel:   "RECENT",
+    resultsLabel:  "RESULTS",
+    compatLabel:   "COMPATIBLE VEHICLES",
+    emptyNormal:   "Enter a model and a year",
+    emptyInverse:  "Enter a part number",
+    invInfoTxt:    "Enter a full or partial part number<br>Ex: <strong>43550-42020</strong> or just <strong>42020</strong>",
+    lblVehicle:    (b) => `${b} Model`,
+    lblPN:         (b) => `OEM Part Number ${b}`,
+    thinking:      (b) => `Searching ${b} catalogue…`,
+    thinkingSub:   (s) => `🌐 Verifying on ${s}…`,
+    thinkingInv:   (b) => `Identifying ${b}…`,
+    noRefFound:    "No confirmed reference found on web catalogues.",
+    noVehFound:    "No vehicle found. Check the part number.",
+    alertModel:    "Please enter a model and a year.",
+    alertPN:       "Please enter a part number.",
+    searchingBtn:  "SEARCHING…",
+    identifyingBtn:"IDENTIFYING…",
+    verifiedRefs:  "Verified OEM References",
+    results:       (n) => `${n} result(s)`,
+    compatVeh:     "Compatible Vehicles",
+    vehicles:      (n) => `${n} vehicle(s)`,
+    copyBtn:       "COPY",
+    copiedBtn:     "✓ COPIED",
+    shareBtnTxt:   "Share",
+    shareTitleModal:"SHARE",
+    shareSubModal: "Share this tool with your colleagues",
+    shareWaLabel:  "Share via WhatsApp",
+    shareWaDesc:   "Send the link directly",
+    shareLinkLabel:"Copy link",
+    shareLinkDesc: "Copy to clipboard",
+    shareNativeLabel:"More options",
+    shareNativeDesc:"Telegram, Email, SMS…",
+    shareCancelBtn:"CANCEL",
+  },
+  fr: {
+    tagline:       "Roulements de moyeu · Vérification web · 4 marques",
+    tabVehicle:    "VÉHICULE → REF",
+    tabReverse:    "REF → VÉHICULE",
+    webBadge:      "VÉRIFICATION WEB EN TEMPS RÉEL",
+    posLabel:      "Position",
+    posAll:        "🔄 Tout",
+    posFront:      "⬆ Avant",
+    posRear:       "⬇ Arrière",
+    exLabel:       "Exemples rapides",
+    searchBtn:     "RECHERCHER",
+    identifyBtn:   "IDENTIFIER",
+    recentLabel:   "RÉCENT",
+    resultsLabel:  "RÉSULTATS",
+    compatLabel:   "VÉHICULES COMPATIBLES",
+    emptyNormal:   "Entrez un modèle et une année",
+    emptyInverse:  "Entrez un part number",
+    invInfoTxt:    "Entrez un part number complet ou partiel<br>Ex : <strong>43550-42020</strong> ou juste <strong>42020</strong>",
+    lblVehicle:    (b) => `Modèle ${b}`,
+    lblPN:         (b) => `Part Number OEM ${b}`,
+    thinking:      (b) => `Recherche catalogue ${b}…`,
+    thinkingSub:   (s) => `🌐 Vérification sur ${s}…`,
+    thinkingInv:   (b) => `Identification ${b}…`,
+    noRefFound:    "Aucune référence confirmée trouvée sur les catalogues web.",
+    noVehFound:    "Aucun véhicule trouvé. Vérifiez le part number.",
+    alertModel:    "Entrez le modèle et l'année.",
+    alertPN:       "Entrez un part number.",
+    searchingBtn:  "RECHERCHE…",
+    identifyingBtn:"IDENTIFICATION…",
+    verifiedRefs:  "Références OEM vérifiées",
+    results:       (n) => `${n} résultat(s)`,
+    compatVeh:     "Véhicules compatibles",
+    vehicles:      (n) => `${n} véhicule(s)`,
+    copyBtn:       "COPIER",
+    copiedBtn:     "✓ COPIÉ",
+    shareBtnTxt:   "Partager",
+    shareTitleModal:"PARTAGER",
+    shareSubModal: "Partagez cet outil avec vos collègues",
+    shareWaLabel:  "Partager via WhatsApp",
+    shareWaDesc:   "Envoyer le lien directement",
+    shareLinkLabel:"Copier le lien",
+    shareLinkDesc: "Copier dans le presse-papier",
+    shareNativeLabel:"Plus d'options",
+    shareNativeDesc:"Telegram, Email, SMS…",
+    shareCancelBtn:"ANNULER",
+  }
+};
+
+let currentLang  = 'en';
+let currentBrand = 'Toyota';
+let currentTab   = 'normal';
+let selectedPos  = 'all';
+let normalHist   = JSON.parse(localStorage.getItem('mH')  || '{}');
+let invHist      = JSON.parse(localStorage.getItem('mIH') || '{}');
+
+// ════════════════════════════════════
+//  CONFIG MARQUES
+// ════════════════════════════════════
+const BRANDS = {
+  Toyota:     { color:'#E8001D', flag:'🇯🇵', sites:'amayama.com, toyotapartsdeal.com, parts.toyota.com',
+    exNormal:[['RAV4','2008'],['Corolla','2005'],['Hilux','2015'],['Prado','2012']],
+    exInverse:['43550-42020','42450-48010','43502-02080','42020','48010'] },
+  Nissan:     { color:'#C00D1E', flag:'🇯🇵', sites:'amayama.com, nissanpartsdeal.com, parts.nissan.com',
+    exNormal:[['X-Trail','2008'],['Qashqai','2012'],['Navara','2010'],['Patrol','2005']],
+    exInverse:['40202-EA500','43202-EA500','40202-JD00A','EA500','JD00A'] },
+  Mitsubishi: { color:'#E8001D', flag:'🇯🇵', sites:'amayama.com, mitsubishipartsdeal.com',
+    exNormal:[['Pajero','2007'],['L200','2010'],['Outlander','2012'],['Eclipse Cross','2019']],
+    exInverse:['MR992390','MB809020','3748A011','992390','809020'] },
+  Hyundai:    { color:'#002C5F', flag:'🇰🇷', sites:'amayama.com, hyundaipartsdeal.com, parts.hyundaiusa.com',
+    exNormal:[['Tucson','2008'],['Santa Fe','2010'],['i30','2012'],['ix35','2014']],
+    exInverse:['51750-2E000','51750-2S100','51750-1H000','2E000','2S100'] },
+};
+
+// ════════════════════════════════════
+//  LANGUE
+// ════════════════════════════════════
+function t(key, arg) {
+  const v = LANG[currentLang][key];
+  return typeof v === 'function' ? v(arg) : (v || key);
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btnFR').className = 'lang-btn' + (lang==='fr' ? ' active' : '');
+  document.getElementById('btnEN').className = 'lang-btn' + (lang==='en' ? ' active' : '');
+  localStorage.setItem('lang', lang);
+  applyTranslations();
+  applyBrand(currentBrand);
+  renderExamples();
+  resetEmptyStates();
+}
+
+function applyTranslations() {
+  // Tagline
+  document.getElementById('tagline').textContent = t('tagline');
+  // Tab spans
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.dataset.t;
+    if (key === 'invInfoTxt') { el.innerHTML = t('invInfoTxt'); return; }
+    const val = LANG[currentLang][key];
+    if (val && typeof val === 'string') el.innerHTML = val;
+  });
+  // Share button
+  document.getElementById('shareBtnTxt').textContent    = t('shareBtnTxt');
+  document.getElementById('shareTitleModal').textContent = t('shareTitleModal');
+  document.getElementById('shareSubModal').textContent   = t('shareSubModal');
+  document.getElementById('shareWaLabel').textContent    = t('shareWaLabel');
+  document.getElementById('shareWaDesc').textContent     = t('shareWaDesc');
+  document.getElementById('shareLinkLabel').textContent  = t('shareLinkLabel');
+  document.getElementById('shareLinkDesc').textContent   = t('shareLinkDesc');
+  document.getElementById('shareNativeLabel').textContent= t('shareNativeLabel');
+  document.getElementById('shareNativeDesc').textContent = t('shareNativeDesc');
+  document.getElementById('shareCancelBtn').textContent  = t('shareCancelBtn');
+  // Search buttons
+  if (!document.getElementById('searchBtn').disabled)
+    document.getElementById('searchBtn').textContent = t('searchBtn');
+  if (!document.getElementById('invSearchBtn').disabled)
+    document.getElementById('invSearchBtn').textContent = t('identifyBtn');
+}
+
+function resetEmptyStates() {
+  const rN = document.getElementById('results');
+  const rI = document.getElementById('resultsInv');
+  if (rN.querySelector('.empty')) rN.innerHTML = `<div class="empty"><div class="big">🔩</div>${t('emptyNormal')}</div>`;
+  if (rI.querySelector('.empty')) rI.innerHTML = `<div class="empty"><div class="big">🔄</div>${t('emptyInverse')}</div>`;
+}
+
+// ════════════════════════════════════
+//  BRAND
+// ════════════════════════════════════
+function applyBrand(brand) {
+  const b = BRANDS[brand];
+  document.documentElement.style.setProperty('--brand', b.color);
+  document.getElementById('logoIcon').style.background = b.color;
+  document.getElementById('brandName').textContent = brand.toUpperCase();
+  document.getElementById('brandName').style.color = b.color;
+  document.getElementById('lblVehicle').textContent = t('lblVehicle', brand);
+  document.getElementById('lblPN').textContent      = t('lblPN', brand);
+  document.getElementById('invInfo').innerHTML =
+    `🔄 <span data-t="invInfoTxt">${t('invInfoTxt')}</span>`;
+}
+
+function renderExamples() {
+  const b = BRANDS[currentBrand];
+  document.getElementById('exNormal').innerHTML = b.exNormal.map(([c,y]) =>
+    `<div class="ex-pill" onclick="document.getElementById('carInput').value='${c}';document.getElementById('yearInput').value='${y}'">${c} ${y}</div>`
+  ).join('');
+  document.getElementById('exInverse').innerHTML = b.exInverse.map(ex =>
+    `<div class="ex-pill" onclick="document.getElementById('pnInput').value='${ex}'">${ex}</div>`
+  ).join('');
+}
+
+function switchBrand(btn) {
+  currentBrand = btn.dataset.brand;
+  document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyBrand(currentBrand);
+  renderExamples();
+  renderNormalHist();
+  renderInvHist();
+  document.getElementById('results').innerHTML    = `<div class="empty"><div class="big">${BRANDS[currentBrand].flag}</div>${t('emptyNormal')}</div>`;
+  document.getElementById('resultsInv').innerHTML = `<div class="empty"><div class="big">🔄</div>${t('emptyInverse')}</div>`;
+  document.getElementById('carInput').value  = '';
+  document.getElementById('yearInput').value = '';
+  document.getElementById('pnInput').value   = '';
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('viewNormal').className  = 'view' + (tab==='normal'  ? ' active' : '');
+  document.getElementById('viewInverse').className = 'view' + (tab==='inverse' ? ' active' : '');
+  document.getElementById('tabNormal').className   = 'tab-btn' + (tab==='normal'  ? ' active' : '');
+  document.getElementById('tabInverse').className  = 'tab-btn' + (tab==='inverse' ? ' active' : '');
+}
+
+function setPos(btn) {
+  document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedPos = btn.dataset.pos;
+}
+
+// ════════════════════════════════════
+//  HISTORIQUE
+// ════════════════════════════════════
+function saveNormalHist(car, year) {
+  normalHist[currentBrand] = [{car,year},...(normalHist[currentBrand]||[]).filter(x=>!(x.car===car&&x.year===year))].slice(0,6);
+  localStorage.setItem('mH', JSON.stringify(normalHist));
+  renderNormalHist();
+}
+function saveInvHist(pn) {
+  invHist[currentBrand] = [pn,...(invHist[currentBrand]||[]).filter(x=>x!==pn)].slice(0,6);
+  localStorage.setItem('mIH', JSON.stringify(invHist));
+  renderInvHist();
+}
+function renderNormalHist() {
+  const h = normalHist[currentBrand] || [];
+  document.getElementById('normalHistSection').style.display = h.length ? 'block' : 'none';
+  document.getElementById('normalHist').innerHTML = h.map(x =>
+    `<div class="hist-pill" onclick="document.getElementById('carInput').value='${x.car}';document.getElementById('yearInput').value='${x.year}'">${x.car} ${x.year}</div>`
+  ).join('');
+}
+function renderInvHist() {
+  const h = invHist[currentBrand] || [];
+  document.getElementById('invHistSection').style.display = h.length ? 'block' : 'none';
+  document.getElementById('invHist').innerHTML = h.map(p =>
+    `<div class="hist-pill" onclick="document.getElementById('pnInput').value='${p}'">${p}</div>`
+  ).join('');
+}
+
+// ════════════════════════════════════
+//  API CLAUDE + WEB SEARCH
+// ════════════════════════════════════
+async function callClaude(prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514', max_tokens:2000,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+  const data = await res.json();
+  const raw  = data.content.filter(b=>b.type==='text').map(b=>b.text||'').join('');
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Invalid response — please retry');
+  return JSON.parse(match[0]);
+}
+
+function promptNormal(brand, car, year, pos) {
+  const sites = BRANDS[brand].sites;
+  const posStr = pos !== 'all' ? ` position ${pos==='front'?'front':'rear'}` : '';
+  return `You are an OEM ${brand} parts expert.
+STEP 1 MANDATORY: Use web_search to verify on: ${sites}
+Search query: "${brand} ${car} ${year} hub bearing wheel bearing OEM part number${posStr}"
+STEP 2: Return ONLY references confirmed by your web search. NEVER invent a number.
+Reply ONLY in valid JSON:
+{"vehicle":"${brand} ${car} ${year}","chassis_code":"...","source_note":"✅ Verified on [site used]","parts":[{"part_number":"...","position":"front","generation":"...","bearing_type":"Hub Unit","description":"Front hub bearing","variant":"4WD"}]}`;
+}
+
+function promptInverse(brand, pn) {
+  const sites = BRANDS[brand].sites;
+  const isPartial = !pn.includes('-') && pn.length <= 6;
+  return `You are an OEM ${brand} parts expert.
+STEP 1 MANDATORY: Use web_search to verify on: ${sites}
+Search query: "${brand} OEM part number ${pn} hub bearing vehicle application"
+STEP 2: ${isPartial ? `"${pn}" is a partial number. Find all complete part numbers containing "${pn}" and their vehicles.` : `Find which ${brand} vehicle(s) use hub bearing OEM part ${pn}.`}
+NEVER invent — only what you confirm on the sites.
+Reply ONLY in valid JSON:
+{"query":"${pn}","note":"✅ Verified on [site used]","vehicles":[{"make":"${brand}","model":"...","years":"...","chassis":"...","position":"front","variant":"4WD","part_number_confirmed":"...","description":"Front hub bearing"}]}`;
+}
+
+// ════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════
+const posMapEN = { front:'FRONT', rear:'REAR', front_left:'FRONT LEFT', front_right:'FRONT RIGHT', rear_left:'REAR LEFT', rear_right:'REAR RIGHT' };
+const posMapFR = { front:'AVANT', rear:'ARRIÈRE', front_left:'AV GAUCHE', front_right:'AV DROIT', rear_left:'AR GAUCHE', rear_right:'AR DROIT' };
+function posLabel(p) {
+  const map = currentLang === 'fr' ? posMapFR : posMapEN;
+  return map[(p||'').toLowerCase()] || (p||'?').toUpperCase();
+}
+
+function renderParts(parts, sourceNote) {
+  if (!parts.length) return `<div class="error-box">${t('noRefFound')}</div>`;
+  let html = `<div class="result-header"><span class="result-title">${t('verifiedRefs')}</span><span class="result-count">${t('results', parts.length)}</span></div>`;
+  parts.forEach((p,i) => {
+    html += `<div class="part-card" style="animation-delay:${i*.07}s">
+      <div class="part-number">${p.part_number}</div>
+      <div class="part-meta">
+        ${p.position    ? `<span class="badge badge-brand">${posLabel(p.position)}</span>` : ''}
+        ${p.generation  ? `<span class="badge badge-gen">${p.generation}</span>` : ''}
+        ${p.variant     ? `<span class="badge badge-gen">${p.variant}</span>` : ''}
+        ${p.bearing_type? `<span class="badge badge-gen">${p.bearing_type}</span>` : ''}
+      </div>
+      <div class="part-desc">${p.description||''}</div>
+      <button class="copy-btn" onclick="copyPN('${p.part_number}',this)">${t('copyBtn')}</button>
+    </div>`;
+  });
+  if (sourceNote) html += `<div class="src-note">${sourceNote}</div>`;
+  return html;
+}
+
+function renderVehicles(vehicles, note) {
+  if (!vehicles.length) return `<div class="error-box">${t('noVehFound')}</div>`;
+  let html = `<div class="result-header"><span class="result-title">${t('compatVeh')}</span><span class="result-count blue">${t('vehicles', vehicles.length)}</span></div>`;
+  vehicles.forEach((v,i) => {
+    html += `<div class="vehicle-card" style="animation-delay:${i*.07}s">
+      <div class="vehicle-name">${v.make} ${v.model}</div>
+      <div class="vehicle-pn">${v.part_number_confirmed}</div>
+      <div class="part-meta">
+        ${v.years   ? `<span class="badge badge-blue">${v.years}</span>` : ''}
+        ${v.chassis ? `<span class="badge badge-gen">${v.chassis}</span>` : ''}
+        ${v.position? `<span class="badge badge-brand">${posLabel(v.position)}</span>` : ''}
+        ${v.variant ? `<span class="badge badge-gen">${v.variant}</span>` : ''}
+      </div>
+      <div class="part-desc">${v.description||''}</div>
+    </div>`;
+  });
+  if (note) html += `<div class="src-note">${note}</div>`;
+  return html;
+}
+
+function copyPN(pn, btn) {
+  navigator.clipboard.writeText(pn).then(() => {
+    btn.textContent = t('copiedBtn'); btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = t('copyBtn'); btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// ════════════════════════════════════
+//  ACTIONS SEARCH
+// ════════════════════════════════════
+async function doSearch() {
+  const car  = document.getElementById('carInput').value.trim();
+  const year = document.getElementById('yearInput').value.trim();
+  const btn  = document.getElementById('searchBtn');
+  if (!car || !year) { alert(t('alertModel')); return; }
+  saveNormalHist(car, year);
+  btn.disabled = true; btn.textContent = t('searchingBtn');
+  document.getElementById('results').innerHTML = `
+    <div class="thinking">
+      <div class="thinking-dots"><span></span><span></span><span></span></div>
+      <p>${t('thinking', currentBrand)}</p>
+      <small>${t('thinkingSub', BRANDS[currentBrand].sites.split(',')[0].trim())}</small>
+    </div>`;
+  try {
+    const data = await callClaude(promptNormal(currentBrand, car, year, selectedPos));
+    document.getElementById('results').innerHTML = renderParts(data.parts||[], data.source_note);
+  } catch(e) {
+    document.getElementById('results').innerHTML = `<div class="error-box">⚠ ${e.message}</div>`;
+  } finally { btn.disabled = false; btn.textContent = t('searchBtn'); }
+}
+
+async function doInverse() {
+  const pn  = document.getElementById('pnInput').value.trim().toUpperCase();
+  const btn = document.getElementById('invSearchBtn');
+  if (!pn) { alert(t('alertPN')); return; }
+  saveInvHist(pn);
+  btn.disabled = true; btn.textContent = t('identifyingBtn');
+  document.getElementById('resultsInv').innerHTML = `
+    <div class="thinking">
+      <div class="thinking-dots"><span></span><span></span><span></span></div>
+      <p>${t('thinkingInv', currentBrand)}</p>
+      <small>${t('thinkingSub', BRANDS[currentBrand].sites.split(',')[0].trim())}</small>
+    </div>`;
+  try {
+    const data = await callClaude(promptInverse(currentBrand, pn));
+    document.getElementById('resultsInv').innerHTML = renderVehicles(data.vehicles||[], data.note);
+  } catch(e) {
+    document.getElementById('resultsInv').innerHTML = `<div class="error-box">⚠ ${e.message}</div>`;
+  } finally { btn.disabled = false; btn.textContent = t('identifyBtn'); }
+}
+
+// ════════════════════════════════════
+//  SHARE
+// ════════════════════════════════════
+function openShare()  { document.getElementById('shareOverlay').classList.add('open'); }
+function closeShare() { document.getElementById('shareOverlay').classList.remove('open'); }
+
+const SHARE_URL  = window.location.href;
+const SHARE_TEXT = 'OEM Hub Bearing Finder — Toyota, Nissan, Mitsubishi, Hyundai · by PERFECT';
+
+function shareWhatsApp() {
+  window.open(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + '\n' + SHARE_URL)}`, '_blank');
+  closeShare();
+}
+function copyLink() {
+  navigator.clipboard.writeText(SHARE_URL).then(() => {
+    const btn = document.getElementById('shareLinkLabel');
+    btn.textContent = currentLang === 'fr' ? '✓ Lien copié !' : '✓ Link copied!';
+    setTimeout(() => { btn.textContent = t('shareLinkLabel'); }, 2000);
+  });
+}
+function shareNative() {
+  if (navigator.share) {
+    navigator.share({ title:'OEM Hub Finder by PERFECT', text:SHARE_TEXT, url:SHARE_URL }).catch(()=>{});
+    closeShare();
+  } else { copyLink(); }
+}
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+function init() {
+  const savedLang = localStorage.getItem('lang') || 'en';
+  currentLang = savedLang;
+  document.getElementById('btnFR').className = 'lang-btn' + (savedLang==='fr' ? ' active' : '');
+  document.getElementById('btnEN').className = 'lang-btn' + (savedLang==='en' ? ' active' : '');
+  applyTranslations();
+  applyBrand('Toyota');
+  renderExamples();
+  renderNormalHist();
+  renderInvHist();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (currentTab === 'normal')  doSearch();
+  if (currentTab === 'inverse') doInverse();
+});
+
+init();
+</script>
+</body>
+</html>
